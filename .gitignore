@@ -4,5 +4,6 @@ dist/
 .env.*
 EXAM_PLAYBOOK.md
 claude.md.txt
+docs/VIVA.md
 .DS_Store
 Thumbs.db
