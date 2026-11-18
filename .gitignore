@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+.env.*
+EXAM_PLAYBOOK.md
+claude.md.txt
+.DS_Store
+Thumbs.db
