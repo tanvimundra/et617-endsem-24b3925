@@ -1,14 +1,13 @@
 /**
  * src/app.js
- * State Management, C4 10-Minute Session Persistence (`localStorage`),
- * Interactive T6 Indicator Dropper Bench, and 5-Screen Rendering for ET617 Exam (`24b3925`).
+ * Clean, child-friendly 5-Screen Learning App for AcidBase Coach.
+ * Keeps all exam card/Deliverable metadata tucked cleanly inside Screen 5 (About) and the subtle footer.
  */
 
 import {
   EXAM_CARD_META,
   INDICATORS,
   SUBSTANCES,
-  MISCONCEPTIONS,
   CONCEPT_CARDS,
   QUESTION_BANK
 } from "./content.js";
@@ -16,12 +15,11 @@ import {
 import {
   evaluateLearnerResponse,
   decideAdaptiveOutcome,
-  generateAdaptiveQuestion,
-  buildD6AIPromptSpec
+  generateAdaptiveQuestion
 } from "./tutorEngine.js";
 
 export const STORAGE_KEY = "et617_24b3925_state";
-export const SESSION_LIMIT_SECONDS = 600; // C4: 10-minute session (600 seconds)
+export const SESSION_LIMIT_SECONDS = 600; // 10-minute session (600 seconds)
 
 export function createInitialState() {
   return {
@@ -32,18 +30,14 @@ export function createInitialState() {
     hasStartedSession: false,
     lastSavedAt: null,
 
-    // P13_CP Point 1: Learner Profile (Diagnostic & Self-Efficacy Confidence)
-    profileLevel: "foundation", // "foundation" | "standard"
-    confidenceLevel: "unsure", // "low" | "unsure" | "confident"
+    profileLevel: "foundation",
+    confidenceLevel: "unsure",
     diagnosticCompleted: false,
-    diagnosticScore: 0,
 
-    // Interactive T6 Lab Bench state
     selectedSubstanceId: "lemon",
     selectedIndicatorId: "turmeric",
     labHistoryCount: 0,
 
-    // P4 Adaptive Tutor state
     currentTaskIndex: 0,
     currentDifficulty: 1,
     activeCustomTask: null,
@@ -53,21 +47,17 @@ export function createInitialState() {
     consecutiveWrong: 0,
     showDrawerLabInTutor: false,
 
-    // Current task UI inputs
     selectedMcqOption: null,
     predictorInput: { category: "", ind1: "", ind2: "" },
     explanationInput: "",
 
-    // Latest evaluation & P4 Decision Rule state
     lastEvaluation: null,
     lastAdaptiveDecision: null,
     prereqLabCompletedForCurrent: false,
 
-    // Mastery & Misconception tracking (D5 & D8)
     masteryByLO: { LO1: 20, LO2: 15, LO3: 10 },
     misconceptionsDetected: { M1: 0, M2: 0 },
     misconceptionsResolved: [],
-    activeScenarioPreset: null, // "scenarioA_correct" | "scenarioB_misconception"
     history: []
   };
 }
@@ -94,12 +84,11 @@ export function saveState() {
   try {
     learnerState.lastSavedAt = new Date().toLocaleTimeString([], {
       hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
+      minute: "2-digit"
     });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(learnerState));
   } catch (err) {
-    // Ignore storage quota errors in restricted frames
+    // Ignore storage quota errors
   }
 }
 
@@ -136,9 +125,8 @@ function startSessionTimer() {
 function updateHeaderTimerOnly() {
   const timerEl = document.getElementById("c4-timer-readout");
   const fillEl = document.getElementById("c4-progress-fill");
-  const remaining = Math.max(0, SESSION_LIMIT_SECONDS - learnerState.sessionElapsedSeconds);
   if (timerEl) {
-    timerEl.textContent = `${formatTime(learnerState.sessionElapsedSeconds)} / 10:00 (${formatTime(remaining)} left)`;
+    timerEl.textContent = `${formatTime(learnerState.sessionElapsedSeconds)} / 10:00`;
   }
   if (fillEl) {
     const pct = Math.min(100, Math.round((learnerState.sessionElapsedSeconds / SESSION_LIMIT_SECONDS) * 100));
@@ -165,38 +153,6 @@ function resetInputsForCurrentTask() {
   learnerState.prereqLabCompletedForCurrent = false;
 }
 
-/**
- * Deliverable D5: One-Click Contrasting Learner Scenarios
- * - Scenario A: Correct learner path -> 1st try correct with 0 hints -> triggers Outcome 1 (HARDER_QUESTION)
- * - Scenario B: Learner with D2 Misconception M1/M2 -> triggers Outcome 2 (ALTERNATIVE_EXPLANATION) & Outcome 3 (PREREQUISITE_INSTRUCTION)
- */
-function runContrastingScenarioPreset(mode) {
-  learnerState.hasStartedSession = true;
-  learnerState.activeScenarioPreset = mode;
-  learnerState.currentScreen = "tutor";
-  learnerState.activeCustomTask = null;
-
-  if (mode === "scenarioA_correct") {
-    // Load Task 1 (Turmeric MCQ), select the correct option ('opt_b'), 0 hints, 1st attempt -> triggers HARDER_QUESTION
-    learnerState.currentTaskIndex = 0;
-    learnerState.currentDifficulty = 1;
-    resetInputsForCurrentTask();
-    learnerState.selectedMcqOption = "opt_b";
-    learnerState.confidenceLevel = "confident";
-    handleCheckAnswer(false);
-  } else if (mode === "scenarioB_misconception") {
-    // Load Task 1 (Turmeric MCQ), select M1 misconception option ('opt_a': "turns red in acid & blue in base") -> triggers ALTERNATIVE_EXPLANATION
-    learnerState.currentTaskIndex = 0;
-    learnerState.currentDifficulty = 1;
-    resetInputsForCurrentTask();
-    learnerState.selectedMcqOption = "opt_a";
-    learnerState.confidenceLevel = "low";
-    handleCheckAnswer(false);
-  }
-  saveState();
-  renderApp();
-}
-
 function handleCheckAnswer(shouldRender = true) {
   const task = getActiveTask();
   let input;
@@ -218,7 +174,6 @@ function handleCheckAnswer(shouldRender = true) {
   learnerState.lastAdaptiveDecision = decision;
   learnerState.currentDifficulty = decision.nextDifficulty;
 
-  // Update mastery & misconception counters
   if (evalResult.isCorrect) {
     learnerState.consecutiveWrong = 0;
     const loKey = task.lo || "LO1";
@@ -234,9 +189,8 @@ function handleCheckAnswer(shouldRender = true) {
     }
   }
 
-  // Record in learner interaction log (for D8 Evaluation Plan & P13_CP Adaptivity)
   learnerState.history.push({
-    timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+    timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     taskId: task.id,
     taskTitle: task.title,
     format: task.format,
@@ -258,9 +212,9 @@ function handleRequestLowConfidencePrereq() {
   const evalResult = {
     isCorrect: false,
     misconceptionTag: task.targetMisconception || "M1",
-    feedback: "Good call! Pausing to inspect the indicator in a hands-on Prerequisite Micro-Lab is the smartest way to build confidence without guessing.",
+    feedback: "Good call! Testing the indicator in our mini-beaker first is the best way to see the colour change without guessing.",
     score: 0,
-    matchedCriteria: ["Learner requested Prerequisite Micro-Lab (L5 self-regulation)"]
+    matchedCriteria: []
   };
   const decision = decideAdaptiveOutcome(learnerState, evalResult, {
     lowConfidenceRequested: true
@@ -269,7 +223,7 @@ function handleRequestLowConfidencePrereq() {
   learnerState.lastAdaptiveDecision = decision;
 
   learnerState.history.push({
-    timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+    timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     taskId: task.id,
     taskTitle: task.title,
     format: task.format,
@@ -286,8 +240,7 @@ function handleRequestLowConfidencePrereq() {
 }
 
 /**
- * Renders the Indicator Dropper Problem-Solving Tool (Rubric T6).
- * Used on Screen 2 (Concept & Lab) and inside Screen 3 (Tutor helper drawer).
+ * Interactive Indicator Dropper Lab Bench (Screen 2 & Helper Drawer in Screen 3)
  */
 function renderIndicatorDropperWidget(compact = false) {
   const sub = SUBSTANCES.find((s) => s.id === learnerState.selectedSubstanceId) || SUBSTANCES[0];
@@ -301,19 +254,19 @@ function renderIndicatorDropperWidget(compact = false) {
       : ind.inNeutral;
 
   return `
-    <section class="lab-tool-card ${compact ? "lab-tool-compact" : ""}" aria-label="Interactive Indicator Dropper Tool">
+    <section class="lab-tool-card ${compact ? "lab-tool-compact" : ""}" aria-label="Interactive Colour Dropper Lab">
       <div class="lab-tool-header">
         <div>
-          <span class="pill pill-amber">T6 Problem-Solving Tool</span>
-          <h3>Interactive Indicator Dropper & Colour Bench</h3>
-          <p class="muted-small">Let us test any everyday liquid before you answer! Pick a test liquid and drop an indicator to watch the colour change.</p>
+          <span class="pill pill-amber">Interactive Colour Lab</span>
+          <h3>Test Liquids with Indicators</h3>
+          <p class="muted-small">Pick any liquid below and add a drop of indicator to watch what colour it turns in the beaker.</p>
         </div>
       </div>
 
       <div class="lab-controls-grid">
         <div class="lab-control-col">
-          <label class="field-label" for="select-substance">1. Choose Test Liquid in Beaker:</label>
-          <div class="chip-grid" id="substance-chip-grid">
+          <label class="field-label">1. Pick a Liquid in the Beaker:</label>
+          <div class="chip-grid">
             ${SUBSTANCES.map(
               (s) => `
               <button type="button" class="chip-btn ${s.id === sub.id ? "chip-active" : ""}" data-action="pick-substance" data-id="${s.id}">
@@ -325,8 +278,8 @@ function renderIndicatorDropperWidget(compact = false) {
         </div>
 
         <div class="lab-control-col">
-          <label class="field-label">2. Drop Indicator into Beaker:</label>
-          <div class="chip-grid" id="indicator-chip-grid">
+          <label class="field-label">2. Add an Indicator Drop:</label>
+          <div class="chip-grid">
             ${Object.values(INDICATORS)
               .map(
                 (i) => `
@@ -344,17 +297,17 @@ function renderIndicatorDropperWidget(compact = false) {
         <div class="beaker-visual" style="background:${outcomeObj.hex}; color:${outcomeObj.textHex};">
           <div class="beaker-drop-label">💧 ${ind.name} + ${sub.name}</div>
           <div class="beaker-colour-name">${outcomeObj.label}</div>
-          <div class="beaker-chem-tag">Chemical Nature: <strong>${sub.category.toUpperCase()}</strong> (${sub.chemicalName})</div>
+          <div class="beaker-chem-tag">Type: <strong>${sub.category.toUpperCase()}</strong> (${sub.chemicalName})</div>
         </div>
         <div class="beaker-explanation">
-          <p><strong>What we observe:</strong> ${outcomeObj.note}</p>
-          <p><strong>Why this happens:</strong> ${sub.whyNote}</p>
-          <p class="memory-cue-box"><strong>🧠 Memory Hook (Offloads Rote Table):</strong> ${ind.memoryCue}</p>
+          <p><strong>What happens:</strong> ${outcomeObj.note}</p>
+          <p><strong>Why:</strong> ${sub.whyNote}</p>
+          <p class="memory-cue-box"><strong>🧠 Easy Memory Clue:</strong> ${ind.memoryCue}</p>
         </div>
       </div>
 
       <details class="quick-strip-details">
-        <summary>📊 View Complete 4-Indicator Visual Reference Strip</summary>
+        <summary>📊 See All 4 Indicators Colour Chart</summary>
         <div class="reference-table-wrap">
           <table class="reference-table">
             <thead>
@@ -387,7 +340,7 @@ function renderIndicatorDropperWidget(compact = false) {
 }
 
 /**
- * SCREEN 1: Welcome, C4 10-Min Resume Banner & Diagnostic Profile Check
+ * SCREEN 1: Friendly Student Welcome, Resume Banner & Warm-Up
  */
 function renderWelcomeScreen() {
   const canResume = hadSavedSessionOnBoot || learnerState.history.length > 0 || learnerState.sessionElapsedSeconds > 5;
@@ -398,20 +351,20 @@ function renderWelcomeScreen() {
       ${
         canResume
           ? `
-        <div class="c4-resume-banner" role="region" aria-label="Resume Saved 10-Minute Session">
+        <div class="c4-resume-banner" role="region" aria-label="Resume Saved Study Session">
           <div class="c4-resume-left">
-            <span class="pill pill-green">C4 Constraint: Stop & Resume Ready</span>
-            <h2>Welcome back, Aarav! Pick up right where you left off.</h2>
-            <p>Saved at <strong>${learnerState.lastSavedAt || "just now"}</strong> · Elapsed: <strong>${formatTime(
+            <span class="pill pill-green">Saved Progress Found</span>
+            <h2>Welcome back! Want to pick up right where you left off?</h2>
+            <p>Last saved at <strong>${learnerState.lastSavedAt || "just now"}</strong> · Time used: <strong>${formatTime(
               learnerState.sessionElapsedSeconds
-            )} / 10:00</strong> · Current task: <strong>${activeTask.title}</strong> (${learnerState.history.length} responses logged).</p>
+            )} of 10:00</strong> · Current question: <strong>${activeTask.title}</strong>.</p>
           </div>
           <div class="c4-resume-actions">
             <button type="button" class="btn btn-primary" data-action="resume-saved-session">
-              ▶ Resume Where I Left Off (${learnerState.currentScreen.toUpperCase()})
+              ▶ Continue My Session
             </button>
             <button type="button" class="btn btn-outline" data-action="reset-fresh-session">
-              ↺ Start Fresh 10-Min Session
+              ↺ Start Over Fresh
             </button>
           </div>
         </div>
@@ -421,35 +374,33 @@ function renderWelcomeScreen() {
 
       <section class="hero-card">
         <div class="hero-badges">
-          <span class="pill pill-amber">P4 Adaptive Tutor</span>
-          <span class="pill pill-blue">T4 Acids, Bases & Indicators (Cl. 7–10)</span>
-          <span class="pill pill-purple">L5 Repeat-Learner Safe Mode</span>
-          <span class="pill pill-green">C4 10-Minute Paced Session</span>
+          <span class="pill pill-amber">Class 7–10 Science</span>
+          <span class="pill pill-green">10-Minute Guided Practice</span>
         </div>
-        <h1>Hi Aarav! Let's Master Acids, Bases & Indicators in 10 Calm Minutes.</h1>
+        <h1>Let's Master Acids, Bases & Indicators — Without Memorising Scary Tables!</h1>
         <p class="lead-text">
-          Have you ever mixed up whether <strong>turmeric (haldi)</strong> or <strong>phenolphthalein</strong> turns red or pink in acids?
-          You are not alone! Instead of memorising boring tables, we will test real kitchen liquids together and adapt every question to your pace.
+          Ever mixed up whether <strong>turmeric (haldi)</strong> or <strong>phenolphthalein</strong> turns red, pink, or yellow?
+          Don't worry! Here there are no harsh red "FAIL" marks. We will test kitchen liquids in a virtual beaker and take it one small step at a time.
         </p>
 
         <div class="c4-pacing-plan">
-          <h3>⏱️ Your 10-Minute Micro-Session Plan (Constraint C4)</h3>
+          <h3>⏱️ Our 10-Minute Game Plan (Pause & Resume Anytime)</h3>
           <div class="pacing-steps">
             <div class="pacing-step">
-              <strong>Mins 0–2</strong>
-              <span>Quick 2-Question Warm-Up & Confidence Check</span>
+              <strong>Step 1 (1 min)</strong>
+              <span>Quick check-in on how you feel today</span>
             </div>
             <div class="pacing-step">
-              <strong>Mins 2–4</strong>
-              <span>3 Visual Concept Cards + Interactive Dropper Bench</span>
+              <strong>Step 2 (3 mins)</strong>
+              <span>3 visual notes + test liquids in the Colour Lab</span>
             </div>
             <div class="pacing-step">
-              <strong>Mins 4–9</strong>
-              <span>Adaptive Tutor across 3 Formats (MCQ, Predictor, Explain)</span>
+              <strong>Step 3 (5 mins)</strong>
+              <span>Practice Coach that adapts to your answers</span>
             </div>
             <div class="pacing-step">
-              <strong>Min 9–10</strong>
-              <span>Mastery Map & Misconception Resolution Summary</span>
+              <strong>Step 4 (1 min)</strong>
+              <span>See the skills you unlocked today</span>
             </div>
           </div>
         </div>
@@ -457,35 +408,34 @@ function renderWelcomeScreen() {
 
       <section class="card diagnostic-card">
         <div class="section-header">
-          <span class="pill pill-amber">Rubric P13_CP (1/3): Diagnostic Profile Calibration</span>
-          <h2>Quick 60-Second Warm-Up (No Marks Deducted!)</h2>
-          <p>Tell the tutor how you feel about this topic today so it can calibrate your starting difficulty and support level:</p>
+          <h2>Quick Warm-Up Check-In</h2>
+          <p class="muted-small">Answer these 2 quick questions so your Practice Coach can pick the best starting step for you:</p>
         </div>
 
         <div class="diagnostic-grid">
           <div class="diag-box">
-            <label class="field-label">1. How confident do you feel about Indicator Colour Changes right now?</label>
+            <label class="field-label">1. How do you feel about Acids, Bases & Indicators right now?</label>
             <div class="choice-stack">
               <button type="button" class="option-btn ${learnerState.confidenceLevel === "low" ? "option-selected" : ""}" data-action="set-confidence" data-val="low">
-                😟 <strong>Low confidence (L5):</strong> "I failed this unit test once and get anxious mixing up red, pink, and yellow." (Starts with guided support)
+                😟 <strong>A little nervous:</strong> "I found this hard on my last test and mix up which indicator turns which colour."
               </button>
               <button type="button" class="option-btn ${learnerState.confidenceLevel === "unsure" ? "option-selected" : ""}" data-action="set-confidence" data-val="unsure">
-                🤔 <strong>A bit unsure:</strong> "I know Blue Litmus turns red in acid, but I confuse Turmeric, China Rose, and Phenolphthalein."
+                🤔 <strong>Somewhere in the middle:</strong> "I know Litmus, but I get confused by Turmeric, China Rose, and Phenolphthalein."
               </button>
               <button type="button" class="option-btn ${learnerState.confidenceLevel === "confident" ? "option-selected" : ""}" data-action="set-confidence" data-val="confident">
-                🙂 <strong>Ready for a challenge:</strong> "Take me straight to multi-indicator predictions and explanations."
+                🙂 <strong>Pretty confident:</strong> "I'm ready to try predictions and real-life questions!"
               </button>
             </div>
           </div>
 
           <div class="diag-box">
-            <label class="field-label">2. Quick Diagnostic Check: If we rub soap (a base) on a yellow turmeric curry stain, what happens?</label>
+            <label class="field-label">2. Quick Kitchen Guess: What happens when you rub soap on a yellow curry (haldi) stain?</label>
             <div class="choice-stack">
               <button type="button" class="option-btn ${learnerState.profileLevel === "foundation" && learnerState.diagnosticCompleted ? "option-selected" : ""}" data-action="set-diagnostic" data-level="foundation">
-                ❓ "I think it stays yellow or turns blue — show me why in the Interactive Lab first!" (Sets Profile: <strong>Foundation + Extra Visual Cues</strong>)
+                ❓ "I'm not sure — let's test it in the Colour Lab first!"
               </button>
               <button type="button" class="option-btn ${learnerState.profileLevel === "standard" && learnerState.diagnosticCompleted ? "option-selected" : ""}" data-action="set-diagnostic" data-level="standard">
-                💡 "It turns reddish-brown because soap is a base!" (Sets Profile: <strong>Standard Adaptive Track</strong>)
+                💡 "It turns reddish-brown because soap is a base!"
               </button>
             </div>
           </div>
@@ -493,26 +443,10 @@ function renderWelcomeScreen() {
 
         <div class="primary-cta-bar">
           <button type="button" class="btn btn-primary btn-large" data-action="go-screen" data-screen="concept">
-            Start Step 1: Explore Concept & Indicator Dropper Lab →
+            Next: Open Notes & Colour Lab →
           </button>
-          <button type="button" class="btn btn-secondary" data-action="go-screen" data-screen="tutor">
-            Jump Straight to Adaptive Tutor (Screen 3) →
-          </button>
-        </div>
-      </section>
-
-      <section class="card d5-quick-launcher">
-        <div class="section-header">
-          <span class="pill pill-purple">Deliverable D5 & Viva Walkthrough Helper</span>
-          <h3>Instant Contrasting Learner Scenarios (D5)</h3>
-          <p class="muted-small">Click either preset below to demonstrate how the Adaptive Tutor responds differently to (a) a correct response vs (b) a learner showing Misconception M1/M2:</p>
-        </div>
-        <div class="scenario-btn-row">
-          <button type="button" class="btn btn-outline-green" data-action="run-scenario" data-mode="scenarioA_correct">
-            ▶ Run Scenario A: Correct Learner Path (Triggers Outcome 1: Harder Question)
-          </button>
-          <button type="button" class="btn btn-outline-amber" data-action="run-scenario" data-mode="scenarioB_misconception">
-            ▶ Run Scenario B: Misconception M1 Path (Triggers Outcome 2: Alternative Explanation)
+          <button type="button" class="btn btn-outline" data-action="go-screen" data-screen="tutor">
+            Go Straight to Practice Questions →
           </button>
         </div>
       </section>
@@ -521,19 +455,19 @@ function renderWelcomeScreen() {
 }
 
 /**
- * SCREEN 2: Conversational Concept Brief & Interactive Indicator Lab Tool (P5 & T6)
+ * SCREEN 2: Notes & Interactive Colour Lab
  */
 function renderConceptScreen() {
   return `
     <div class="screen-container">
       <div class="screen-top-bar">
         <div>
-          <span class="pill pill-amber">Screen 2 of 5 · Concept + T6 Tool</span>
-          <h1>Visual Concept Brief & Interactive Indicator Bench</h1>
-          <p class="muted-small">Read the 3 conversational cards below and test any kitchen liquid in the Interactive Dropper Tool.</p>
+          <span class="pill pill-amber">Step 2 · Notes & Colour Lab</span>
+          <h1>3 Easy Rules & Your Colour Dropper Bench</h1>
+          <p class="muted-small">Read the 3 short cards below, then try dropping different indicators into the beaker!</p>
         </div>
         <button type="button" class="btn btn-primary" data-action="go-screen" data-screen="tutor">
-          Proceed to Adaptive Tutor Practice →
+          Try Practice Questions →
         </button>
       </div>
 
@@ -558,10 +492,10 @@ function renderConceptScreen() {
 
       <div class="primary-cta-bar">
         <button type="button" class="btn btn-outline" data-action="go-screen" data-screen="welcome">
-          ← Back to Welcome & Diagnostic
+          ← Back to Start
         </button>
         <button type="button" class="btn btn-primary btn-large" data-action="go-screen" data-screen="tutor">
-          I'm Ready! Start Adaptive Tutor Tasks (3 Formats) →
+          I'm Ready! Start Practice Coach →
         </button>
       </div>
     </div>
@@ -569,50 +503,50 @@ function renderConceptScreen() {
 }
 
 /**
- * SCREEN 3: Adaptive Tutor Workspace (P4 Core — 3 Question Formats + 3 Adaptive Outcomes)
+ * SCREEN 3: Practice Coach (Clean for the Learner)
  */
 function renderTutorScreen() {
   const task = getActiveTask();
   const evalResult = learnerState.lastEvaluation;
   const decision = learnerState.lastAdaptiveDecision;
-  const d6Spec = buildD6AIPromptSpec(learnerState, task, evalResult, decision);
+
+  const formatLabel =
+    task.format === "mcq"
+      ? "Multiple Choice"
+      : task.format === "predictor"
+      ? "Predict the Colour Change"
+      : "Explain in Your Own Words";
 
   return `
     <div class="screen-container">
       <div class="tutor-top-strip">
         <div class="tutor-meta-badges">
-          <span class="pill pill-amber">Format: ${
-            task.format === "mcq"
-              ? "1. Diagnostic Scenario MCQ"
-              : task.format === "predictor"
-              ? "2. Interactive Multi-Indicator Predictor"
-              : "3. Open Explanation Evaluator"
-          }</span>
-          <span class="pill pill-blue">${task.lo} · Bloom: ${task.bloom}</span>
-          <span class="pill pill-purple">Difficulty Level ${task.difficulty} / 3</span>
-          ${task.isGenerated ? `<span class="pill pill-green">✨ Dynamically Generated Task</span>` : ""}
+          <span class="pill pill-amber">${formatLabel}</span>
+          <span class="pill pill-blue">Skill: ${task.bloom}</span>
+          <span class="pill pill-purple">Level ${task.difficulty} of 3</span>
+          ${task.isGenerated ? `<span class="pill pill-green">✨ Custom Practice Question</span>` : ""}
         </div>
 
-        <div class="tutor-helper-Controls">
+        <div class="tutor-helper-controls">
           <button type="button" class="btn btn-small btn-outline" data-action="toggle-tutor-lab">
-            🧪 ${learnerState.showDrawerLabInTutor ? "Hide" : "Open"} Indicator Dropper Tool (T6)
+            🧪 ${learnerState.showDrawerLabInTutor ? "Hide" : "Open"} Colour Dropper Lab
           </button>
         </div>
       </div>
 
       ${learnerState.showDrawerLabInTutor ? renderIndicatorDropperWidget(true) : ""}
 
-      <!-- Task Selector Pills so Learner / Examiner can also inspect any of the 6 core tasks + generated tasks -->
-      <div class="task-progress-strip" role="navigation" aria-label="Task Sequence">
+      <!-- Question Number Strip -->
+      <div class="task-progress-strip" role="navigation" aria-label="Practice Questions">
         ${QUESTION_BANK.map(
           (q, idx) => `
           <button type="button" class="step-pill ${!learnerState.activeCustomTask && learnerState.currentTaskIndex === idx ? "step-pill-active" : ""}" data-action="jump-task" data-idx="${idx}">
-            Q${idx + 1}: ${q.format.toUpperCase()} (${q.lo})
+            Question ${idx + 1}
           </button>
         `
         ).join("")}
         <button type="button" class="step-pill ${learnerState.activeCustomTask ? "step-pill-active" : ""}" data-action="generate-new-ai-task">
-          ✨ Generate Adaptive Variant (P4)
+          ✨ Give Me a Fresh Practice Question
         </button>
       </div>
 
@@ -621,39 +555,38 @@ function renderTutorScreen() {
           <h2>${task.title}</h2>
           ${
             task.isGenerated
-              ? `<p class="generated-reason-banner">🤖 <strong>Why the Adaptive Tutor generated this question:</strong> ${task.generatedReason}</p>`
+              ? `<p class="generated-reason-banner">🎯 <strong>Picked for you:</strong> ${task.generatedReason}</p>`
               : ""
           }
         </div>
 
         <p class="question-prompt-text">${task.prompt}</p>
 
-        <!-- FORMAT-SPECIFIC INPUT WORKSPACE -->
         <div class="format-workspace">
           ${renderFormatInput(task)}
         </div>
 
-        <!-- SCAFFOLDING BAR: 3-Step Hint Ladder + Low-Confidence Prerequisite Trigger (L5) -->
+        <!-- Learner Action Bar -->
         <div class="scaffolding-action-bar">
           <button type="button" class="btn btn-primary btn-large" data-action="check-answer">
             ✔ Check My Answer
           </button>
 
           <button type="button" class="btn btn-outline" data-action="request-hint">
-            💡 Get a Hint (${learnerState.hintsUsedOnCurrent} / 3 used)
+            💡 Show a Hint (${learnerState.hintsUsedOnCurrent} / 3)
           </button>
 
           <button type="button" class="btn btn-outline-amber" data-action="request-prereq-lab">
-            🛟 I feel stuck — show Prerequisite Micro-Lab (Outcome 3)
+            🛟 I'm not sure — let's test it in the beaker first
           </button>
         </div>
 
-        <!-- PROGRESSIVE HINT LADDER DISPLAY -->
+        <!-- Progressive Hints -->
         ${
           learnerState.hintsUsedOnCurrent > 0
             ? `
-          <div class="hint-ladder-box" role="region" aria-label="Progressive Hint Ladder">
-            <h4>🪜 Progressive Scaffolding Hints (ZPD):</h4>
+          <div class="hint-ladder-box" role="region" aria-label="Helpful Hints">
+            <h4>🪜 Helpful Clues:</h4>
             <ol>
               ${task.hints
                 .slice(0, learnerState.hintsUsedOnCurrent)
@@ -665,48 +598,9 @@ function renderTutorScreen() {
             : ""
         }
 
-        <!-- EVALUATION & P4 ADAPTIVE DECISION ENGINE OUTCOME PANEL -->
+        <!-- Coaching Feedback & Next Step -->
         ${evalResult && decision ? renderAdaptiveFeedbackAndOutcome(task, evalResult, decision) : ""}
       </article>
-
-      <!-- D5 Scenario Quick-Switch Bar for Live Demo & Screenshots -->
-      <section class="card d5-inline-bar">
-        <div class="d5-inline-flex">
-          <div>
-            <strong>📸 Deliverable D5 & P4 Design Challenge Demo Switcher:</strong>
-            <span class="muted-small">Trigger all 3 P4 adaptive outcomes in one click:</span>
-          </div>
-          <div class="scenario-btn-row">
-            <button type="button" class="btn btn-small btn-outline-green" data-action="run-scenario" data-mode="scenarioA_correct">
-              Scenario A: 1st-Try Correct → Outcome 1 (Harder Question)
-            </button>
-            <button type="button" class="btn btn-small btn-outline-amber" data-action="run-scenario" data-mode="scenarioB_misconception">
-              Scenario B: Misconception M1 → Outcome 2 (Alternative Explanation)
-            </button>
-            <button type="button" class="btn btn-small btn-outline" data-action="request-prereq-lab">
-              Outcome 3: Trigger Prerequisite Micro-Lab
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- Collapsible D6 Live AI Prompt & Guardrail Inspector -->
-      <details class="card d6-inspector-details">
-        <summary>🔍 Inspect Live AI Prompt, Output Validator & Fallback (Deliverable D6)</summary>
-        <div class="d6-inspector-body">
-          <p class="muted-small">Shows the exact structured prompt constructed from Aarav's live state and the schema/chemistry guardrail checks run before rendering:</p>
-          <div class="code-grid">
-            <div>
-              <h4>1. System Prompt & Pedagogical Guardrails</h4>
-              <pre class="code-box">${d6Spec.systemPrompt}</pre>
-            </div>
-            <div>
-              <h4>2. Live Learner State Input Payload</h4>
-              <pre class="code-box">${d6Spec.userPromptJSON}</pre>
-            </div>
-          </div>
-        </div>
-      </details>
     </div>
   `;
 }
@@ -714,7 +608,7 @@ function renderTutorScreen() {
 function renderFormatInput(task) {
   if (task.format === "mcq") {
     return `
-      <div class="choice-stack" role="radiogroup" aria-label="Multiple choice options">
+      <div class="choice-stack" role="radiogroup" aria-label="Answer options">
         ${task.options
           .map(
             (opt) => `
@@ -735,7 +629,7 @@ function renderFormatInput(task) {
     return `
       <div class="predictor-grid">
         <div class="predictor-step-card">
-          <label class="field-label">Step A: Classify <strong>${cfg.substanceName}</strong>:</label>
+          <label class="field-label">Part 1: Is <strong>${cfg.substanceName}</strong> an acid, base, or neutral?</label>
           <div class="chip-grid">
             ${["acid", "base", "neutral"]
               .map(
@@ -750,7 +644,7 @@ function renderFormatInput(task) {
         </div>
 
         <div class="predictor-step-card">
-          <label class="field-label">Step B: Predict colour with <strong>${cfg.indicator1Name}</strong>:</label>
+          <label class="field-label">Part 2: What colour will <strong>${cfg.indicator1Name}</strong> turn?</label>
           <div class="chip-grid">
             ${cfg.indicator1Choices
               .map(
@@ -765,7 +659,7 @@ function renderFormatInput(task) {
         </div>
 
         <div class="predictor-step-card">
-          <label class="field-label">Step C: Predict colour with <strong>${cfg.indicator2Name}</strong>:</label>
+          <label class="field-label">Part 3: What colour will <strong>${cfg.indicator2Name}</strong> turn?</label>
           <div class="chip-grid">
             ${cfg.indicator2Choices
               .map(
@@ -782,21 +676,14 @@ function renderFormatInput(task) {
     `;
   }
 
-  // Format 3: Short Open-Text Explanation Evaluator
   const rubric = task.explanationRubric || {};
   return `
     <div class="explanation-workspace">
       <div class="explanation-helper-row">
-        <label class="field-label" for="explanation-textarea">Write your 1–2 sentence explanation below:</label>
+        <label class="field-label" for="explanation-textarea">Write your answer in 1–2 simple sentences:</label>
         <div class="starter-btn-group">
           <button type="button" class="btn btn-small btn-outline" data-action="insert-starter" data-text="${rubric.sampleStarter || ""}">
-            ✍️ Insert Sentence Starter (Scaffolding)
-          </button>
-          <button type="button" class="btn btn-small btn-outline-amber" data-action="insert-starter" data-text="Rub lemon juice on the ant bite because lemon juice is acidic and cancels the sting.">
-            🧪 Test M2 Misconception Answer
-          </button>
-          <button type="button" class="btn btn-small btn-outline-green" data-action="insert-starter" data-text="${task.modelAnswer}">
-            ✨ Insert Full Model Answer
+            ✍️ Use a Sentence Starter
           </button>
         </div>
       </div>
@@ -804,16 +691,13 @@ function renderFormatInput(task) {
         id="explanation-textarea"
         class="explanation-textarea"
         rows="4"
-        placeholder="Type your explanation here (e.g., name which substance is an acid, which is a base, and how they neutralise or change the indicator colour)..."
+        placeholder="Type your explanation here (for example: which liquid is an acid, which is a base, and how they react)..."
       >${learnerState.explanationInput}</textarea>
-      <p class="muted-small">💡 Concept checklist the evaluator looks for: (1) Substance choice, (2) Acid/Base chemical nature, (3) Neutralisation or indicator colour mechanism.</p>
+      <p class="muted-small">💡 Tip: Try to mention which substance is an <strong>acid</strong>, which is a <strong>base</strong>, and how they <strong>neutralise</strong> or change colour.</p>
     </div>
   `;
 }
 
-/**
- * Renders the Feedback + P4 Design Challenge 3-Outcome Adaptive Routing Panel
- */
 function renderAdaptiveFeedbackAndOutcome(task, evalResult, decision) {
   const outcomeClass =
     decision.outcome === "HARDER_QUESTION"
@@ -822,41 +706,25 @@ function renderAdaptiveFeedbackAndOutcome(task, evalResult, decision) {
       ? "outcome-alt"
       : "outcome-prereq";
 
-  const mInfo = evalResult.misconceptionTag ? MISCONCEPTIONS[evalResult.misconceptionTag] : null;
-
   return `
     <div class="feedback-outcome-wrapper ${evalResult.isCorrect ? "feedback-correct" : "feedback-coaching"}" role="status" aria-live="polite">
       <div class="feedback-header">
-        <span class="status-icon">${evalResult.isCorrect ? "🌟 Mastery Demonstrated!" : "🧭 Coaching Feedback (Safe to Try!)"}</span>
-        ${
-          evalResult.misconceptionTag
-            ? `<span class="pill pill-red">Diagnosed Misconception ${evalResult.misconceptionTag}: ${mInfo ? mInfo.title : ""}</span>`
-            : ""
-        }
+        <span class="status-icon">${evalResult.isCorrect ? "🌟 Great Job!" : "🧭 Coach Tip — Let's Look Closer"}</span>
       </div>
 
       <p class="feedback-main-copy">${evalResult.feedback}</p>
 
-      ${
-        evalResult.matchedCriteria && evalResult.matchedCriteria.length > 0
-          ? `<p class="muted-small"><strong>Evaluator Checkpoints:</strong> ${evalResult.matchedCriteria.join(" · ")}</p>`
-          : ""
-      }
-
       <div class="model-answer-strip">
-        <strong>✔ Model Answer Reference:</strong> ${task.modelAnswer}
+        <strong>✔ Complete Answer:</strong> ${task.modelAnswer}
       </div>
 
-      <!-- P4 DESIGN CHALLENGE DECISION ENGINE BANNER -->
       <div class="p4-decision-banner ${outcomeClass}">
         <div class="p4-decision-title">
-          <span class="pill pill-dark">P4 Adaptive Decision Rule Triggered</span>
           <strong>${decision.badgeLabel}</strong>
         </div>
-        <p class="p4-rule-code"><code>${decision.ruleTriggered}</code></p>
-        <p class="muted-small"><strong>Pedagogical Why:</strong> ${decision.pedagogicalReason}</p>
+        <p style="margin:0.35rem 0;">${decision.ruleTriggered}</p>
 
-        <!-- OUTCOME 2: ALTERNATIVE VISUAL EXPLANATION & MISCONCEPTION CONTRAST CARD -->
+        <!-- Outcome 2: Everyday Kitchen Analogy + Parallel Question -->
         ${
           decision.outcome === "ALTERNATIVE_EXPLANATION" && task.altExplanationCard
             ? `
@@ -864,16 +732,9 @@ function renderAdaptiveFeedbackAndOutcome(task, evalResult, decision) {
             <h4>🎨 ${task.altExplanationCard.headline}</h4>
             <p>${task.altExplanationCard.analogy}</p>
             <div class="boxed-cue">${task.altExplanationCard.ruleSummary}</div>
-            ${
-              mInfo
-                ? `
-              <p class="muted-small"><strong>Why Misconception ${mInfo.code} happens:</strong> ${mInfo.scientificTruth}</p>
-            `
-                : ""
-            }
             <div class="outcome-cta-row">
               <button type="button" class="btn btn-primary" data-action="apply-adaptive-route" data-route="ALTERNATIVE_EXPLANATION">
-                🔄 Generate Parallel Practice Task on This Concept →
+                🔄 Try a Similar Practice Question →
               </button>
             </div>
           </div>
@@ -881,28 +742,28 @@ function renderAdaptiveFeedbackAndOutcome(task, evalResult, decision) {
             : ""
         }
 
-        <!-- OUTCOME 3: PREREQUISITE MICRO-LAB INSTRUCTION -->
+        <!-- Outcome 3: Hands-On Mini-Lab Before Retrying -->
         ${
           decision.outcome === "PREREQUISITE_INSTRUCTION" && task.prerequisiteLabTask
             ? `
           <div class="remediation-box prereq-lab-box">
-            <h4>🔬 Guided Prerequisite Micro-Lab (Stepping Back Before Retrying)</h4>
+            <h4>🔬 Hands-On Mini-Lab Check</h4>
             <p>${task.prerequisiteLabTask.instruction}</p>
             <div class="prereq-interactive-row">
               <button type="button" class="btn btn-secondary" data-action="run-prereq-drop" data-sub="${task.prerequisiteLabTask.substanceId}" data-ind="${task.prerequisiteLabTask.indicatorId}">
                 💧 Drop ${INDICATORS[task.prerequisiteLabTask.indicatorId].name} into ${
-                SUBSTANCES.find((s) => s.id === task.prerequisiteLabTask.substanceId)?.name || "Sample"
-              } Now
+                SUBSTANCES.find((s) => s.id === task.prerequisiteLabTask.substanceId)?.name || "Beaker"
+              }
               </button>
               ${
                 learnerState.prereqLabCompletedForCurrent
-                  ? `<span class="pill pill-green">✔ Prerequisite Observation Complete!Look at the colour change in the Lab Bench above.</span>`
+                  ? `<span class="pill pill-green">✔ Look at the colour change in the beaker at the top of the page!</span>`
                   : ""
               }
             </div>
             <div class="outcome-cta-row">
               <button type="button" class="btn btn-primary" data-action="apply-adaptive-route" data-route="PREREQUISITE_INSTRUCTION">
-                🪜 Proceed to Foundational Stepping-Stone Question →
+                🪜 Try an Easier Stepping-Stone Question →
               </button>
             </div>
           </div>
@@ -910,19 +771,17 @@ function renderAdaptiveFeedbackAndOutcome(task, evalResult, decision) {
             : ""
         }
 
-        <!-- OUTCOME 1: HARDER QUESTION -->
+        <!-- Outcome 1: Advance to Harder Question -->
         ${
           decision.outcome === "HARDER_QUESTION"
             ? `
           <div class="remediation-box harder-question-box">
-            <h4>🚀 Ready for the Next Cognitive Level!</h4>
-            <p>You answered accurately on the first attempt without needing hints. The tutor will now increase the difficulty and move you up the Bloom ladder.</p>
             <div class="outcome-cta-row">
               <button type="button" class="btn btn-primary" data-action="next-core-task">
-                ➡ Advance to Next Harder Core Task →
+                ➡ Next Harder Question →
               </button>
               <button type="button" class="btn btn-secondary" data-action="apply-adaptive-route" data-route="HARDER_QUESTION">
-                ✨ Generate Fresh Harder AI Challenge →
+                ✨ Try a Bonus Challenge →
               </button>
             </div>
           </div>
@@ -935,7 +794,7 @@ function renderAdaptiveFeedbackAndOutcome(task, evalResult, decision) {
 }
 
 /**
- * SCREEN 4: 10-Minute Session Summary, Mastery Map & D5 Scenario Comparison
+ * SCREEN 4: My Progress (Clean & Encouraging for the Student)
  */
 function renderSummaryScreen() {
   const m = learnerState.masteryByLO;
@@ -943,38 +802,38 @@ function renderSummaryScreen() {
     <div class="screen-container">
       <div class="screen-top-bar">
         <div>
-          <span class="pill pill-green">Screen 4 of 5 · C4 Session Summary & D5 Scenarios</span>
-          <h1>Aarav's 10-Minute Mastery Map & Adaptive Log</h1>
-          <p class="muted-small">Time elapsed in this session: <strong>${formatTime(
+          <span class="pill pill-green">Step 4 · My Progress</span>
+          <h1>What You Have Learned Today</h1>
+          <p class="muted-small">Study time used: <strong>${formatTime(
             learnerState.sessionElapsedSeconds
-          )} / 10:00</strong> · Total tasks attempted: <strong>${learnerState.history.length}</strong></p>
+          )} of 10:00</strong> · Questions practiced: <strong>${learnerState.history.length}</strong></p>
         </div>
         <button type="button" class="btn btn-primary" data-action="go-screen" data-screen="tutor">
-          ← Return to Adaptive Tutor
+          ← Back to Practice Coach
         </button>
       </div>
 
       <div class="summary-grid">
         <section class="card">
-          <h3>📈 Learning Outcome Mastery (D1 & D8)</h3>
+          <h3>📈 Your Science Skills</h3>
           <div class="mastery-bars">
             <div class="mastery-item">
               <div class="mastery-label">
-                <strong>LO1 (Understand — Classify Acids, Bases & Indicators)</strong>
+                <strong>1. Spotting Acids, Bases & Neutral Liquids</strong>
                 <span>${m.LO1}%</span>
               </div>
               <div class="progress-track"><div class="progress-bar-fill" style="width:${m.LO1}%"></div></div>
             </div>
             <div class="mastery-item">
               <div class="mastery-label">
-                <strong>LO2 (Apply — Predict Multi-Indicator Colour Changes)</strong>
+                <strong>2. Predicting Indicator Colour Changes</strong>
                 <span>${m.LO2}%</span>
               </div>
               <div class="progress-track"><div class="progress-bar-fill" style="width:${m.LO2}%"></div></div>
             </div>
             <div class="mastery-item">
               <div class="mastery-label">
-                <strong>LO3 (Analyse/Evaluate — Explain Neutralisation & Indicator Mysteries)</strong>
+                <strong>3. Explaining Real-Life Neutralisation</strong>
                 <span>${m.LO3}%</span>
               </div>
               <div class="progress-track"><div class="progress-bar-fill" style="width:${m.LO3}%"></div></div>
@@ -983,77 +842,32 @@ function renderSummaryScreen() {
         </section>
 
         <section class="card">
-          <h3>🛡️ Misconception Diagnosis & Resolution (D2 & P2)</h3>
-          <div class="misconception-summary-list">
-            <div class="misc-summary-item">
-              <strong>M1: Indicator Colour-Rule Overgeneralisation</strong>
-              <p class="muted-small">Triggered: <strong>${learnerState.misconceptionsDetected.M1} time(s)</strong> · Rule learned: Turmeric turns reddish-brown in base (stays yellow in acid); Phenolphthalein turns pink only in base.</p>
-            </div>
-            <div class="misc-summary-item">
-              <strong>M2: Neutralisation Direction ('Like Cures Like') Error</strong>
-              <p class="muted-small">Triggered: <strong>${learnerState.misconceptionsDetected.M2} time(s)</strong> · Rule learned: Ant sting (formic acid) is neutralised by a mild base (baking soda), never by lemon juice (acid).</p>
-            </div>
-          </div>
+          <h3>🧠 Key Rules to Remember for Your Test</h3>
+          <ul class="highlight-list">
+            <li><strong>Litmus:</strong> Blue turns <strong>Red</strong> in Acid; Red turns <strong>Blue</strong> in Base.</li>
+            <li><strong>Turmeric (Haldi):</strong> Stays <strong>Yellow</strong> in Acid; turns <strong>Reddish-Brown</strong> only in Base (like soap).</li>
+            <li><strong>China Rose (Gudhal):</strong> Turns <strong>Dark Pink (Magenta)</strong> in Acid and <strong>Green</strong> in Base.</li>
+            <li><strong>Phenolphthalein:</strong> Stays <strong>Colourless</strong> in Acid and turns <strong>Bright Pink</strong> only in Base.</li>
+            <li><strong>Neutralisation:</strong> Always calm an Acid (like an ant bite) with a mild Base (like baking soda), never with lemon juice!</li>
+          </ul>
         </section>
       </div>
 
-      <!-- D5 Contrasting Scenarios Comparison Table -->
       <section class="card">
-        <h3>🔀 Deliverable D5: Two Contrasting Learner Scenarios</h3>
-        <p class="muted-small">Shows how the Adaptive Tutor responds differently to a learner who answers correctly vs a learner exhibiting Misconception M1/M2:</p>
-        <div class="reference-table-wrap">
-          <table class="reference-table">
-            <thead>
-              <tr>
-                <th>Scenario</th>
-                <th>Learner Action on Task 1 (Turmeric on Lemon vs Soap)</th>
-                <th>System Diagnosis</th>
-                <th>P4 Adaptive Decision Outcome</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Scenario A (Correct Learner)</strong></td>
-                <td>Selects: <em>"Stays yellow in lemon juice (acid); turns reddish-brown in soap (base)"</em> on 1st try, 0 hints.</td>
-                <td>No misconception; confirms LO1 understanding.</td>
-                <td><span class="pill pill-green">Outcome 1: HARDER_QUESTION</span> Advances to Level 2 Interactive Multi-Indicator Predictor.</td>
-              </tr>
-              <tr>
-                <td><strong>Scenario B (Misconception M1 Learner)</strong></td>
-                <td>Selects: <em>"Turns red in lemon juice and blue in soap"</em> (or clicks low-confidence).</td>
-                <td>Flags <strong>Misconception M1</strong> (applying Litmus rule to Turmeric).</td>
-                <td><span class="pill pill-amber">Outcome 2: ALTERNATIVE_EXPLANATION</span> Shows Curry-Stain Kitchen Analogy + Contrast Card & generates parallel practice (or <span class="pill pill-purple">Outcome 3: PREREQUISITE_INSTRUCTION</span> on 2nd miss).</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="scenario-btn-row" style="margin-top:0.75rem;">
-          <button type="button" class="btn btn-outline-green" data-action="run-scenario" data-mode="scenarioA_correct">
-            ▶ Demo Scenario A Live in Tutor
-          </button>
-          <button type="button" class="btn btn-outline-amber" data-action="run-scenario" data-mode="scenarioB_misconception">
-            ▶ Demo Scenario B Live in Tutor
-          </button>
-        </div>
-      </section>
-
-      <!-- Interaction Log Table (D8 Evaluation Plan) -->
-      <section class="card">
-        <h3>📋 Live Learner Interaction Log (Saved in localStorage for C4 & D8)</h3>
+        <h3>📋 Your Recent Practice Activity</h3>
         ${
           learnerState.history.length === 0
-            ? `<p class="muted-small">No question attempts recorded yet. Try a question in the Adaptive Tutor or click a Scenario button above!</p>`
+            ? `<p class="muted-small">You haven't checked any practice questions yet. Head over to <strong>Practice Coach</strong> to try your first one!</p>`
             : `
           <div class="reference-table-wrap">
             <table class="reference-table">
               <thead>
                 <tr>
                   <th>Time</th>
-                  <th>Task & Format</th>
-                  <th>Result</th>
-                  <th>Misconception</th>
-                  <th>Hints / Attempts</th>
-                  <th>P4 Adaptive Outcome</th>
+                  <th>Question</th>
+                  <th>Status</th>
+                  <th>Hints Used</th>
+                  <th>Coach Next Step</th>
                 </tr>
               </thead>
               <tbody>
@@ -1062,11 +876,16 @@ function renderSummaryScreen() {
                     (h) => `
                   <tr>
                     <td>${h.timestamp}</td>
-                    <td><strong>${h.taskTitle}</strong> (<code>${h.format}</code>, ${h.lo})</td>
-                    <td>${h.isCorrect ? "✔ Correct" : "🧭 Coached"}</td>
-                    <td>${h.misconceptionTag || "None"}</td>
-                    <td>${h.hintsUsed} hint(s) / ${h.attempts} try</td>
-                    <td><code>${h.outcomeTriggered}</code></td>
+                    <td><strong>${h.taskTitle}</strong></td>
+                    <td>${h.isCorrect ? "🌟 Solved" : "🧭 Practiced with Coach"}</td>
+                    <td>${h.hintsUsed}</td>
+                    <td>${
+                      h.outcomeTriggered === "HARDER_QUESTION"
+                        ? "Level Up Challenge"
+                        : h.outcomeTriggered === "ALTERNATIVE_EXPLANATION"
+                        ? "Kitchen Analogy + Extra Practice"
+                        : "Hands-On Mini-Lab"
+                    }</td>
                   </tr>
                 `
                   )
@@ -1082,23 +901,23 @@ function renderSummaryScreen() {
 }
 
 /**
- * SCREEN 5: About, Official Exam Identity Card (`24b3925`) & D6 / Viva Reference
+ * SCREEN 5: About Screen (Required by Section 2 Identity Rules)
  */
 function renderAboutScreen() {
-  const d6Spec = buildD6AIPromptSpec(learnerState, getActiveTask(), learnerState.lastEvaluation, learnerState.lastAdaptiveDecision);
-
   return `
     <div class="screen-container">
       <section class="card identity-hero-card">
-        <span class="pill pill-amber">Official ET 617 End-Semester Exam Identity Card</span>
-        <h1>Identity Token / Roll Number: <code>${EXAM_CARD_META.rollNo}</code> (<code>${EXAM_CARD_META.rollNoUpper}</code>)</h1>
-        <p class="lead-text">This educational application was designed and built fresh during the ET 617 End-Semester Examination for the following personal card combination:</p>
+        <span class="pill pill-amber">About AcidBase Coach</span>
+        <h1>Identity Token: <code>${EXAM_CARD_META.rollNo}</code> (<code>${EXAM_CARD_META.rollNoUpper}</code>)</h1>
+        <p class="lead-text">
+          AcidBase Coach is an adaptive science learning application designed to help middle-school students master <strong>Acids, Bases, and Indicators</strong> in calm, resumable 10-minute study sessions.
+        </p>
 
         <div class="reference-table-wrap">
           <table class="reference-table">
             <tbody>
               <tr>
-                <th>ID — Identity Token (Roll No.)</th>
+                <th style="width:30%">ID — Identity Token (Roll No.)</th>
                 <td><strong><code>${EXAM_CARD_META.rollNo}</code></strong> (<code>${EXAM_CARD_META.rollNoUpper}</code>)</td>
               </tr>
               <tr>
@@ -1111,7 +930,7 @@ function renderAboutScreen() {
               </tr>
               <tr>
                 <th>L — Learner Context</th>
-                <td><strong><code>${EXAM_CARD_META.learnerCode}</code></strong>: ${EXAM_CARD_META.learnerTitle} (Persona: Aarav, 13, Class 8)</td>
+                <td><strong><code>${EXAM_CARD_META.learnerCode}</code></strong>: ${EXAM_CARD_META.learnerTitle}</td>
               </tr>
               <tr>
                 <th>C — Design Constraint</th>
@@ -1121,50 +940,25 @@ function renderAboutScreen() {
           </table>
         </div>
       </section>
-
-      <section class="card">
-        <h3>🤖 Deliverable D6: AI Functionality Specification</h3>
-        <p><strong>Feature:</strong> ${d6Spec.featureName} · <strong>Target Model:</strong> <code>${d6Spec.modelTarget}</code></p>
-        <ul class="highlight-list">
-          ${d6Spec.validationChecks.map((c) => `<li><strong>Validation Check:</strong> ${c}</li>`).join("")}
-          <li><strong>Fallback Behaviour:</strong> ${d6Spec.fallbackMechanism}</li>
-        </ul>
-        <div class="code-grid">
-          <div>
-            <h4>Actual System Prompt</h4>
-            <pre class="code-box">${d6Spec.systemPrompt}</pre>
-          </div>
-          <div>
-            <h4>Actual Learner Context Payload</h4>
-            <pre class="code-box">${d6Spec.userPromptJSON}</pre>
-          </div>
-        </div>
-      </section>
     </div>
   `;
 }
 
-/**
- * Main Render Function: Updates Header, Active Screen View, Pause Overlay, and Persistent Identity Footer
- */
 export function renderApp() {
   const root = document.getElementById("app-main");
   if (!root) return;
 
-  // Update active navigation tab states
   document.querySelectorAll("[data-nav-screen]").forEach((btn) => {
     const target = btn.getAttribute("data-nav-screen");
     btn.classList.toggle("nav-tab-active", target === learnerState.currentScreen);
   });
 
-  // Update C4 Header Timer & Pause button
   updateHeaderTimerOnly();
   const pauseBtn = document.getElementById("c4-pause-btn");
   if (pauseBtn) {
-    pauseBtn.textContent = learnerState.isPaused ? "▶ Resume 10-Min Session" : "⏸ Pause & Save (C4)";
+    pauseBtn.textContent = learnerState.isPaused ? "▶ Resume" : "⏸ Pause & Save";
   }
 
-  // Render Pause Modal Banner if paused
   const pauseBanner = document.getElementById("c4-pause-drawer");
   if (pauseBanner) {
     if (learnerState.isPaused) {
@@ -1173,12 +967,12 @@ export function renderApp() {
       pauseBanner.innerHTML = `
         <div class="pause-drawer-inner">
           <div>
-            <span class="pill pill-green">C4 Session Paused & Saved in localStorage</span>
-            <strong>Your progress is safely saved at ${formatTime(learnerState.sessionElapsedSeconds)} / 10:00 (Screen: ${learnerState.currentScreen.toUpperCase()}, Task: ${task.title}).</strong>
-            <p class="muted-small">You can close or refresh this browser tab right now and resume from this exact spot whenever you return!</p>
+            <span class="pill pill-green">Session Paused & Saved</span>
+            <strong>Your progress is saved at ${formatTime(learnerState.sessionElapsedSeconds)} / 10:00 (Current question: ${task.title}).</strong>
+            <p class="muted-small">You can take a break or close this tab and continue right from this spot anytime!</p>
           </div>
           <button type="button" class="btn btn-primary" data-action="toggle-pause">
-            ▶ Resume Session Now
+            ▶ Continue Session
           </button>
         </div>
       `;
@@ -1188,7 +982,6 @@ export function renderApp() {
     }
   }
 
-  // Render active screen
   if (learnerState.currentScreen === "welcome") {
     root.innerHTML = renderWelcomeScreen();
   } else if (learnerState.currentScreen === "concept") {
@@ -1201,7 +994,6 @@ export function renderApp() {
     root.innerHTML = renderAboutScreen();
   }
 
-  // Wire textarea live input for Format 3 (Explanation)
   const textarea = document.getElementById("explanation-textarea");
   if (textarea) {
     textarea.addEventListener("input", (e) => {
@@ -1211,9 +1003,6 @@ export function renderApp() {
   }
 }
 
-/**
- * Global Delegated Event Listener
- */
 function setupEventListeners() {
   document.body.addEventListener("click", (e) => {
     const navBtn = e.target.closest("[data-nav-screen]");
@@ -1397,17 +1186,12 @@ function setupEventListeners() {
         break;
       }
 
-      case "run-scenario":
-        runContrastingScenarioPreset(actionEl.getAttribute("data-mode"));
-        break;
-
       default:
         break;
     }
   });
 }
 
-// Boot application
 document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
   startSessionTimer();

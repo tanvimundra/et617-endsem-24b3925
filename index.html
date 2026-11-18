@@ -3,70 +3,66 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AcidBase Coach — Adaptive Tutor (ET617 · 24b3925)</title>
+  <title>AcidBase Coach — Interactive Science Tutor</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <!-- Persistent Header: Navigation + C4 10-Minute Session Pacer & Pause/Resume -->
+  <!-- Clean Learner Header: Brand + 10-Minute Study Session Timer & Pause/Save -->
   <header class="app-header">
     <div class="header-top-row">
       <div class="brand-block">
         <span class="brand-logo" aria-hidden="true">🧪</span>
         <div>
           <strong class="brand-title">AcidBase Coach</strong>
-          <span class="brand-subtitle">P4 Adaptive Tutor · Cl. 7–10 Acids, Bases & Indicators · ID: <code>24b3925</code></span>
+          <span class="brand-subtitle">Acids, Bases & Indicators · Calm 10-Minute Practice</span>
         </div>
       </div>
 
-      <div class="c4-session-widget" aria-label="10-Minute Session Timer">
+      <div class="c4-session-widget" aria-label="10-Minute Study Session Timer">
         <div class="c4-timer-text">
-          <span class="c4-badge">C4 10-Min Session</span>
-          <strong id="c4-timer-readout">00:00 / 10:00 (10:00 left)</strong>
+          <span class="c4-badge">10-Min Session</span>
+          <strong id="c4-timer-readout">00:00 / 10:00</strong>
         </div>
         <div class="c4-progress-track" aria-hidden="true">
           <div id="c4-progress-fill" class="c4-progress-fill" style="width: 0%"></div>
         </div>
         <button type="button" id="c4-pause-btn" class="btn btn-small btn-outline" data-action="toggle-pause">
-          ⏸ Pause & Save (C4)
+          ⏸ Pause & Save
         </button>
       </div>
     </div>
 
-    <!-- 5 Connected Screens Navigation Bar (Deliverable D4) -->
-    <nav class="main-nav" aria-label="Primary 5-Screen Navigation">
+    <!-- 5 Connected Screens Navigation Bar -->
+    <nav class="main-nav" aria-label="Primary Navigation">
       <button type="button" class="nav-tab nav-tab-active" data-nav-screen="welcome">
-        1. Welcome & Resume
+        1. Start
       </button>
       <button type="button" class="nav-tab" data-nav-screen="concept">
-        2. Concept & Dropper Lab (T6)
+        2. Notes & Colour Lab
       </button>
       <button type="button" class="nav-tab" data-nav-screen="tutor">
-        3. Adaptive Tutor (P4)
+        3. Practice Coach
       </button>
       <button type="button" class="nav-tab" data-nav-screen="summary">
-        4. Progress & D5 Scenarios
+        4. My Progress
       </button>
       <button type="button" class="nav-tab" data-nav-screen="about">
-        5. About & Card (24b3925)
+        5. About
       </button>
     </nav>
   </header>
 
-  <!-- C4 Pause & Save Drawer -->
+  <!-- Pause & Save Banner -->
   <div id="c4-pause-drawer" class="c4-pause-drawer" hidden></div>
 
   <!-- Main Screen Container -->
   <main id="app-main" class="app-main" role="main"></main>
 
-  <!-- Mandatory Identity Token Footer on Every Screen (Section 2 Identity Rules) -->
+  <!-- Subtle Mandatory Footer with Identity Token on Every Screen (Section 2 Rule) -->
   <footer id="identity-footer" class="identity-footer" role="contentinfo">
     <div class="footer-inner">
-      <span><strong>Identity Token (Roll No.):</strong> <code>24b3925</code> (<code>24B3925</code>)</span>
-      <span><strong>Exam Card:</strong> <code>P4</code> Adaptive Tutor · <code>P4-T4</code> Acids, Bases & Indicators · <code>L5</code> Anxious Repeat Learner · <code>C4</code> 10-Min Sessions</span>
-      <div>
-        <button type="button" class="btn-link" data-nav-screen="about">View Full Exam Card & AI Spec →</button>
-        <a href="./report.html" target="_blank" rel="noopener" class="btn-link" style="text-decoration:none; margin-left:0.4rem;">📄 Printable Report (D1–D8 PDF) ↗</a>
-      </div>
+      <span>AcidBase Coach · Class 7–10 Science</span>
+      <span>Identity Token: <code>24b3925</code></span>
     </div>
   </footer>
 
