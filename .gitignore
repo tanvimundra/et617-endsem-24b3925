@@ -2,8 +2,6 @@ node_modules/
 dist/
 .env
 .env.*
-EXAM_PLAYBOOK.md
-claude.md.txt
-docs/VIVA.md
+*.log
 .DS_Store
 Thumbs.db
