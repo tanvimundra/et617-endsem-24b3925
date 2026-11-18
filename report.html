@@ -195,15 +195,15 @@
 
   <h2>4. D3 — Educational Content (Concept + 6 Tasks in 3 Formats + Model Feedback)</h2>
   <p>
-    <strong>Concept Presentation:</strong> Three conversational cards on Screen 2 introduce (1) Everyday Acids vs Bases ($\text{H}^+$ vs $\text{OH}^-$), (2) The 4 Indicators & Breaking Trap <code>M1</code> (Litmus, Turmeric, China Rose, Phenolphthalein), and (3) Neutralisation & Breaking Trap <code>M2</code> ($\text{Acid} + \text{Base} \rightarrow \text{Salt} + \text{Water}$), paired with the <strong>Interactive Indicator Dropper & Colour Bench (Rubric T6 Tool)</strong>.
+    <strong>Concept Presentation:</strong> Three conversational cards on Screen 2 introduce (1) Everyday Acids vs Bases (H<sup>+</sup> vs OH<sup>−</sup> ions), (2) The 4 Indicators &amp; Breaking Trap <code>M1</code> (Litmus, Turmeric, China Rose, Phenolphthalein), and (3) Neutralisation &amp; Breaking Trap <code>M2</code> (Acid + Base &rarr; Salt + Water), paired with the <strong>Interactive Indicator Dropper &amp; Colour Bench (Rubric T6 Tool)</strong>.
   </p>
   <table>
     <thead>
       <tr>
-        <th>Task & Format</th>
+        <th>Task &amp; Format</th>
         <th>Prompt Summary</th>
         <th>Model Answer</th>
-        <th>Correct & Misconception (<code>M1</code>/<code>M2</code>) Feedback</th>
+        <th>Correct &amp; Misconception (<code>M1</code>/<code>M2</code>) Feedback</th>
       </tr>
     </thead>
     <tbody>
@@ -211,13 +211,13 @@
         <td><strong>Task 1 (<code>q1_mcq_turmeric</code>)</strong><br/>Format 1: Scenario MCQ (<code>LO1</code>)</td>
         <td>Turmeric paste on Strip A (lemon juice, acid) vs Strip B (soap water, base). What colours appear?</td>
         <td>Strip A stays bright yellow; Strip B turns reddish-brown.</td>
-        <td><strong>Correct:</strong> Confirms acid keeps haldi yellow & base turns it reddish-brown.<br/><strong>M1 Feedback:</strong> Explains that Litmus's "acid=red" rule does not apply to turmeric; soap (base) turns curry stains reddish-brown.</td>
+        <td><strong>Correct:</strong> Confirms acid keeps haldi yellow &amp; base turns it reddish-brown.<br/><strong>M1 Feedback:</strong> Explains that Litmus's "acid=red" rule does not apply to turmeric; soap (base) turns curry stains reddish-brown.</td>
       </tr>
       <tr>
         <td><strong>Task 2 (<code>q2_mcq_phenolphthalein</code>)</strong><br/>Format 1: Scenario MCQ (<code>LO1</code>)</td>
         <td>Beaker X turns phenolphthalein bright pink. What happens to red litmus paper in Beaker X?</td>
         <td>Red litmus turns blue (phenolphthalein is pink only in a base).</td>
-        <td><strong>Correct:</strong> Links pink phenolphthalein $\rightarrow$ base $\rightarrow$ red litmus turns blue.<br/><strong>M1 Feedback:</strong> Corrects "pink = acid" trap; phenolphthalein is colourless in acid and blushes pink only in base.</td>
+        <td><strong>Correct:</strong> Links pink phenolphthalein &rarr; base &rarr; red litmus turns blue.<br/><strong>M1 Feedback:</strong> Corrects "pink = acid" trap; phenolphthalein is colourless in acid and blushes pink only in base.</td>
       </tr>
       <tr>
         <td><strong>Task 3 (<code>q3_predictor_chinahibiscus</code>)</strong><br/>Format 2: Multi-Indicator Predictor (<code>LO2</code>)</td>
@@ -229,7 +229,7 @@
         <td><strong>Task 4 (<code>q4_predictor_magnesia</code>)</strong><br/>Format 2: Multi-Indicator Predictor (<code>LO2</code>)</td>
         <td>Classify Milk of Magnesia (antacid) and predict colours with China Rose and Phenolphthalein.</td>
         <td>Nature: <strong>Base</strong> | China Rose: <strong>Leafy Green</strong> | Phenolphthalein: <strong>Bright Pink</strong>.</td>
-        <td><strong>Correct:</strong> Confirms antacid is a mild base with green/pink indicator proof.<br/><strong>M1 Feedback:</strong> Explains why antacids must be basic ("anti-acid") to calm stomach $\text{HCl}$.</td>
+        <td><strong>Correct:</strong> Confirms antacid is a mild base with green/pink indicator proof.<br/><strong>M1 Feedback:</strong> Explains why antacids must be basic ("anti-acid") to calm stomach HCl acid.</td>
       </tr>
       <tr>
         <td><strong>Task 5 (<code>q5_explain_antbite</code>)</strong><br/>Format 3: Open Explanation Evaluator (<code>LO3</code>)</td>
@@ -246,59 +246,58 @@
     </tbody>
   </table>
 
-  <h2>5. D4 — Working Application (URL, C4 Implementation & 5-Screen Map)</h2>
+  <h2>5. D4 — Working Application (URL, C4 Implementation &amp; 5-Screen Map)</h2>
   <ul>
     <li><strong>Live URL:</strong> <span contenteditable="true" class="editable-url">https://et617-24b3925.vercel.app</span> (GitHub Pages: <code>https://tanvimundra.github.io/et617-endsem-24b3925/</code>)</li>
-    <li><strong>5 Connected Screens:</strong> (1) <code>Welcome, C4 Resume Banner & Diagnostic Warm-Up</code> $\rightarrow$ (2) <code>Concept Brief & Interactive Indicator Dropper Lab (T6 Tool)</code> $\rightarrow$ (3) <code>Adaptive Tutor Workspace (P4 — 3 Formats + 3 Decision Outcomes)</code> $\rightarrow$ (4) <code>10-Minute Session Summary, Mastery Map & D5 Scenarios</code> $\rightarrow$ (5) <code>About, Exam Card (24b3925) & D6 AI Inspector</code>.</li>
-    <li><strong>Visible C4 Constraint & Identity Token:</strong> Every screen displays the persistent top <strong>10-Minute Session Timer (<code>MM:SS / 10:00</code>)</strong> with a <strong><code>⏸ Pause & Save (C4)</code></strong> drawer backed by <code>localStorage["et617_24b3925_state"]</code>, and the persistent footer with <strong><code>Identity Token (Roll No.): 24b3925 (24B3925)</code></strong>.</li>
+    <li><strong>5 Connected Screens:</strong> (1) <code>1. Start (Welcome, Resume &amp; Warm-Up)</code> &rarr; (2) <code>2. Notes &amp; Colour Lab (T6 Tool)</code> &rarr; (3) <code>3. Practice Coach (P4 — 3 Formats + 3 Adaptive Outcomes)</code> &rarr; (4) <code>4. My Progress (Mastery &amp; Activity Log)</code> &rarr; (5) <code>5. About (Identity Token 24b3925 &amp; Exam Card)</code>.</li>
+    <li><strong>Visible C4 Constraint &amp; Identity Token:</strong> Every screen displays the persistent top <strong>10-Minute Session Timer (<code>MM:SS / 10:00</code>)</strong> with a <strong><code>⏸ Pause &amp; Save</code></strong> drawer backed by <code>localStorage["et617_24b3925_state"]</code>, and the persistent footer with <strong><code>Identity Token: 24b3925</code></strong>.</li>
   </ul>
 
-  <h2>6. D5 — Two Contrasting Learner Scenarios (Live App Paths & Screenshots)</h2>
+  <h2>6. D5 — Two Contrasting Learner Scenarios (Live App Paths &amp; Screenshots)</h2>
   <div class="screenshot-grid">
     <div class="screenshot-card">
-      <h3>Scenario A: Correct Learner Path (<code>Outcome 1: HARDER_QUESTION</code>)</h3>
-      <p><strong>Input:</strong> On Task 1, learner selects Option B (<em>"Strip A stays yellow; Strip B turns reddish-brown"</em>) on 1st try with 0 hints.</p>
-      <p><strong>System Output:</strong> Confirms mastery (+25% LO1) and triggers <strong>P4 Rule 1 $\rightarrow$ Outcome 1: Advance to Harder Question & Higher Format</strong> (moves to Format 2 Multi-Indicator Predictor).</p>
+      <h3>Scenario A: Correct Learner Path (<code>Outcome 1: Harder Question</code>)</h3>
+      <p><strong>Input:</strong> On Question 1, learner selects Option B (<em>"Strip A stays bright yellow; Strip B turns reddish-brown"</em>) on 1st try with 0 hints.</p>
+      <p><strong>System Output:</strong> Confirms mastery (+25% LO1) and triggers <strong>Outcome 1: Level Up to Harder Question &amp; Higher Format</strong> (moves to Format 2 Multi-Indicator Predictor).</p>
       <div class="file-upload-control" style="margin:0.4rem 0;">
-        <label style="font-size:11.5px; font-weight:700;">Optional: Attach your live Scenario A screenshot file:</label>
+        <label style="font-size:11.5px; font-weight:700;">Attach your live Scenario A screenshot file:</label>
         <input type="file" accept="image/*" onchange="previewImg(this, 'img-scen-a')" />
       </div>
       <img id="img-scen-a" alt="Scenario A Live Screenshot" style="display:none;" />
       <div class="mock-ui-capture">
-        <div><span class="badge-green">🌟 Mastery Demonstrated!</span></div>
-        <p><strong>Feedback:</strong> Spot on! Lemon juice is acidic so turmeric stays yellow, while soap water is basic so it turns turmeric reddish-brown!</p>
+        <div><span class="badge-green">🌟 Great Job!</span></div>
+        <p><strong>Feedback:</strong> Spot on! Lemon juice is an acid so turmeric stays yellow, while soap water is a base so it turns turmeric reddish-brown!</p>
         <p style="background:#f0fdf4; border-left:4px solid #15803d; padding:6px;">
-          <strong>P4 Adaptive Decision Rule Triggered: Outcome 1: Advance to Harder Question & Higher Format</strong><br/>
-          <code>Rule 1: Correct on 1st attempt with 0 hints -> Increase difficulty & advance Bloom question format (MCQ -> Predictor -> Explanation).</code>
+          <strong>Level Up: Ready for a Harder Challenge!</strong><br/>
+          You got this right on your first try without needing any hints! Let's move up to a slightly harder question.
         </p>
       </div>
     </div>
 
     <div class="screenshot-card">
-      <h3>Scenario B: Misconception Path (<code>Outcome 2: ALTERNATIVE_EXPLANATION</code>)</h3>
-      <p><strong>Input:</strong> On Task 1, learner selects Option A (<em>"Strip A turns red; Strip B turns blue"</em>) exhibiting <strong>Misconception M1</strong> (or writes <em>"rub lemon juice"</em> on Task 5 exhibiting <strong>M2</strong>).</p>
-      <p><strong>System Output:</strong> Diagnoses <code>Misconception M1</code>, renders the <strong>Curry-Stain Visual Analogy & Contrast Card</strong>, and triggers <strong>P4 Rule 2 $\rightarrow$ Outcome 2: Alternative Explanation + Parallel Generated Task</strong> (or <strong>Outcome 3: Prerequisite Micro-Lab</strong> on 2nd miss).</p>
+      <h3>Scenario B: Misconception Path (<code>Outcome 2: Alternative Explanation</code>)</h3>
+      <p><strong>Input:</strong> On Question 1, learner selects Option A (<em>"Strip A turns red; Strip B turns blue"</em>) exhibiting <strong>Misconception M1</strong> (or writes <em>"rub lemon juice"</em> on Question 5 exhibiting <strong>M2</strong>).</p>
+      <p><strong>System Output:</strong> Diagnoses <code>Misconception M1</code>, renders the <strong>Curry-Stain Kitchen Picture Card</strong>, and triggers <strong>Outcome 2: Alternative Explanation + Similar Generated Practice Question</strong> (or <strong>Outcome 3: Hands-On Mini-Lab</strong> on 2nd miss).</p>
       <div class="file-upload-control" style="margin:0.4rem 0;">
-        <label style="font-size:11.5px; font-weight:700;">Optional: Attach your live Scenario B screenshot file:</label>
+        <label style="font-size:11.5px; font-weight:700;">Attach your live Scenario B screenshot file:</label>
         <input type="file" accept="image/*" onchange="previewImg(this, 'img-scen-b')" />
       </div>
       <img id="img-scen-b" alt="Scenario B Live Screenshot" style="display:none;" />
       <div class="mock-ui-capture">
         <div>
-          <span class="badge-amber">🧭 Coaching Feedback</span>
-          <span class="badge-red">Diagnosed Misconception M1: Indicator Rule Overgeneralisation</span>
+          <span class="badge-amber">🧭 Coach Tip — Let's Look Closer</span>
         </div>
-        <p><strong>Feedback:</strong> Pause and take a breath! You just met Trap M1: applying the Litmus rule ('acid = red, base = blue') to turmeric. Remember: turmeric is NOT litmus!</p>
+        <p><strong>Feedback:</strong> Take a breath — that is a super common mix-up! You used the Litmus rule ('acid = red, base = blue') for turmeric. Unlike litmus, haldi stays yellow in acids and turns reddish-brown in bases.</p>
         <p style="background:#fffbeb; border-left:4px solid #d97706; padding:6px;">
-          <strong>P4 Adaptive Decision Rule Triggered: Outcome 2: Alternative Visual Explanation (Targeting M1)</strong><br/>
-          <code>Rule 2: 1st wrong attempt with Misconception M1 detected -> Keep difficulty level (1), show Everyday Kitchen Analogy + Misconception Contrast Card, and generate a parallel practice task.</code>
+          <strong>Kitchen Clue: Another Way to Picture It</strong><br/>
+          In Indian cooking, we squeeze sour lemon (acid) into yellow haldi dal and it stays YELLOW! It only turns REDDISH-BROWN when touched by alkaline SOAP.
         </p>
       </div>
     </div>
   </div>
 
   <h2>7. D6 — AI Functionality Specification</h2>
-  <p><strong>AI Feature:</strong> P4 Adaptive Question Generator & Free-Text Explanation Evaluator (<code>buildD6AIPromptSpec</code>, <code>validateAIOutput</code>, and <code>generateAdaptiveQuestion</code> in <code>src/tutorEngine.js</code>).</p>
+  <p><strong>AI Feature:</strong> P4 Adaptive Question Generator &amp; Free-Text Explanation Evaluator (<code>buildD6AIPromptSpec</code>, <code>validateAIOutput</code>, and <code>generateAdaptiveQuestion</code> in <code>src/tutorEngine.js</code>).</p>
   <pre>SYSTEM PROMPT:
 You are an empathetic Class 7-10 Science Adaptive Tutor for 'Acids, Bases and Indicators' (Card: P4, T4, L5, C4).
 Learner persona: Aarav (age 13, repeating the unit after failing once, high test anxiety, 10-minute session).
@@ -319,28 +318,28 @@ USER CONTEXT INPUT PAYLOAD:
   "requiredAdaptiveOutcome": "ALTERNATIVE_EXPLANATION"
 }</pre>
   <ul>
-    <li><strong>Pre-Display Validation Guardrails (<code>validateAIOutput</code>):</strong> (1) <em>Schema check:</em> requires valid <code>prompt</code>, <code>format</code> $\in$ <code>['mcq','predictor','explanation']</code>, <code>hints.length === 3</code>, and <code>modelAnswer</code>; (2) <em>Chemistry truth guardrail:</em> prevents hallucinating Misconception M1; (3) <em>Affective filter check (L5):</em> blocks punitive words (<code>/fail|stupid|wrong answer!/i</code>).</li>
+    <li><strong>Pre-Display Validation Guardrails (<code>validateAIOutput</code>):</strong> (1) <em>Schema check:</em> requires valid <code>prompt</code>, <code>format</code> in <code>['mcq', 'predictor', 'explanation']</code>, <code>hints.length === 3</code>, and <code>modelAnswer</code>; (2) <em>Chemistry truth guardrail:</em> prevents hallucinating Misconception M1; (3) <em>Affective filter check (L5):</em> blocks punitive words (<code>/fail|stupid|wrong answer!/i</code>).</li>
     <li><strong>Deterministic Fallback:</strong> When no API key is configured or offline, <code>generateAdaptiveQuestion()</code> synchronously instantiates verified parameterised tasks from <code>DYNAMIC_GENERATOR_TEMPLATES</code> (e.g., <em>Tamarind Water</em>, <em>Sour Curd</em>, <em>Lime Water</em>, <em>Window Cleaner</em>) matched to the exact P4 outcome branch.</li>
   </ul>
 
-  <h2>8. D7 — Pedagogical Rationale & Answer to P4 Design Challenge</h2>
+  <h2>8. D7 — Pedagogical Rationale &amp; Answer to P4 Design Challenge</h2>
   <ul>
-    <li><strong>Cognitive Load Theory & Rubric T6 Tool:</strong> Offloads rote memorisation of 12 colour transitions via the built-in <strong>Interactive Indicator Dropper & Colour Bench</strong>, allowing Aarav to test substances visually while solving problems.</li>
+    <li><strong>Cognitive Load Theory &amp; Rubric T6 Tool:</strong> Offloads rote memorisation of 12 colour transitions via the built-in <strong>Interactive Indicator Dropper &amp; Colour Bench</strong>, allowing Aarav to test substances visually while solving problems.</li>
     <li><strong>Answer to the P4 Design Challenge (Explicit 3-Branch Decision Rule in <code>decideAdaptiveOutcome()</code>):</strong>
       <ol>
-        <li><strong>Outcome 1 — <code>HARDER_QUESTION</code>:</strong> Triggered when <code>isCorrect === true && attempts === 1 && hintsUsed === 0</code>. Increases difficulty (<code>1 -> 2 -> 3</code>) and advances Bloom question format (MCQ $\rightarrow$ Predictor $\rightarrow$ Open Explanation).</li>
-        <li><strong>Outcome 2 — <code>ALTERNATIVE_EXPLANATION</code>:</strong> Triggered when <code>(attempts === 1 && !isCorrect) || misconceptionTag in ["M1","M2"] || (isCorrect && hintsUsed >= 1)</code>. Holds difficulty, displays a visual everyday analogy card (Curry Stain / Acid-Base Seesaw) + misconception contrast, and generates a parallel practice question.</li>
-        <li><strong>Outcome 3 — <code>PREREQUISITE_INSTRUCTION</code>:</strong> Triggered when <code>(attempts >= 2 && !isCorrect) || lowConfidenceRequested === true</code>. Steps back to a guided hands-on <strong>Prerequisite Indicator Micro-Lab</strong> before serving a foundational stepping-stone question.</li>
+        <li><strong>Outcome 1 — <code>HARDER_QUESTION</code>:</strong> Triggered when <code>isCorrect === true &amp;&amp; attempts === 1 &amp;&amp; hintsUsed === 0</code>. Increases difficulty (<code>1 &rarr; 2 &rarr; 3</code>) and advances Bloom question format (Multiple Choice &rarr; Colour Predictor &rarr; Open Explanation).</li>
+        <li><strong>Outcome 2 — <code>ALTERNATIVE_EXPLANATION</code>:</strong> Triggered when <code>(attempts === 1 &amp;&amp; !isCorrect) || misconceptionTag in ["M1","M2"] || (isCorrect &amp;&amp; hintsUsed &gt;= 1)</code>. Holds difficulty, displays a visual everyday analogy card (Curry Stain / Acid-Base Seesaw) + misconception contrast, and generates a parallel practice question.</li>
+        <li><strong>Outcome 3 — <code>PREREQUISITE_INSTRUCTION</code>:</strong> Triggered when <code>(attempts &gt;= 2 &amp;&amp; !isCorrect) || lowConfidenceRequested === true</code>. Steps back to a guided hands-on <strong>Prerequisite Indicator Mini-Lab</strong> before serving a foundational stepping-stone question.</li>
       </ol>
     </li>
-    <li><strong>How L5 and C4 Shaped the Design:</strong> For <code>L5</code> (anxious repeat learner), we replaced harsh error states with a 3-step Hint Ladder, sentence starters, and an <em>"I feel stuck — show Prerequisite Micro-Lab"</em> button. For <code>C4</code> (10-minute sessions), we structured a 10-minute paced flow with automatic <code>localStorage</code> persistence on every click so Aarav can pause and resume without losing a single step.</li>
+    <li><strong>How L5 and C4 Shaped the Design:</strong> For <code>L5</code> (anxious repeat learner), we replaced harsh error states with a 3-step Hint Ladder, sentence starters, and an <em>"I'm not sure — let's test it in the beaker first"</em> button. For <code>C4</code> (10-minute sessions), we structured a 10-minute paced flow with automatic <code>localStorage</code> persistence on every click so Aarav can pause and resume without losing a single step.</li>
   </ul>
 
   <h2>9. D8 — Evaluation Plan</h2>
   <ul>
-    <li><strong>Assessing D1 Outcomes:</strong> <code>LO1</code> is assessed via Scenario MCQs & classification choices; <code>LO2</code> via 3-part Multi-Indicator Predictors (scored 0.33 per part); <code>LO3</code> via the 3-pillar Open Explanation Evaluator (checking substance choice, acid/base role, and neutralisation/indicator mechanism).</li>
+    <li><strong>Assessing D1 Outcomes:</strong> <code>LO1</code> is assessed via Scenario MCQs &amp; classification choices; <code>LO2</code> via 3-part Multi-Indicator Predictors (scored 0.33 per part); <code>LO3</code> via the 3-pillar Open Explanation Evaluator (checking substance choice, acid/base role, and neutralisation/indicator mechanism).</li>
     <li><strong>Log Data Collected (<code>learnerState.history</code>):</strong> Records <code>timestamp</code>, <code>taskId</code>, <code>format</code>, <code>lo</code>, <code>isCorrect</code>, <code>misconceptionTag</code> (<code>M1</code>/<code>M2</code>), <code>hintsUsed</code>, <code>attempts</code>, <code>outcomeTriggered</code>, and <code>sessionElapsedSeconds</code>.</li>
-    <li><strong>Benchmark for Success:</strong> In a 10-minute evaluation with Class 8 repeat learners: (1) $\ge 80\%$ achieve $\ge 75\%$ mastery across LO1–LO3 within 600 seconds; (2) $\ge 85\%$ of learners who trigger <code>M1</code> or <code>M2</code> pass the subsequent generated parallel question on the first attempt after viewing the Alternative Explanation / Prerequisite Micro-Lab.</li>
+    <li><strong>Benchmark for Success:</strong> In a 10-minute evaluation with Class 8 repeat learners: (1) at least 80% achieve 75% or higher mastery across LO1–LO3 within 600 seconds; (2) at least 85% of learners who trigger <code>M1</code> or <code>M2</code> pass the subsequent generated parallel question on the first attempt after viewing the Alternative Explanation / Prerequisite Mini-Lab.</li>
   </ul>
 
   <h2>10. AI-Use Log and Reflection</h2>
